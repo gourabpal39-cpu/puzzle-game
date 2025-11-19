@@ -2,42 +2,22 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>GP VFX Puzzle Game</title>
+  <title>Puzzle Memory Game</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="app" id="app">
-    <header>
-      <h2>🧠 GP VFX Puzzle</h2>
-      <div class="top-bar">
-        <div class="stat">
-          Level:
-          <select id="levelSelect">
-            <option value="easy">Easy 2×2</option>
-            <option value="medium" selected>Medium 4×4</option>
-            <option value="hard">Hard 6×6</option>
-          </select>
-        </div>
-        <div class="stat">
-          Moves: <span id="moveCount">0</span>
-        </div>
-        <div class="stat">
-          Time: <span id="timeCount">0</span>s
-        </div>
-      </div>
-    </header>
+  <h1>🧠 Puzzle Memory Game</h1>
 
-    <main>
-      <div class="game-container" id="game"></div>
-    </main>
+  <p id="stats">Moves: <span id="moveCount">0</span></p>
 
-    <button id="restartBtn">🔁 Restart Game</button>
+  <div class="game-container" id="game"></div>
 
-    <footer>
-      <p>© GP VFX Studio</p>
-    </footer>
-  </div>
+  <button id="restartBtn">🔁 Restart Game</button>
+
+  <footer>
+    <p>© GP VFX Studio</p>
+  </footer>
 
   <script src="script.js"></script>
 </body>
