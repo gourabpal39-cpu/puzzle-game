@@ -1,155 +1,146 @@
-// IMAGE + LEVEL + TIMER VERSION
+// ---------- IMAGE LIST (images folder er file name gulo) ----------
+const imageList = [
+  "apple.png",
+  "banana.png",
+  "cat.png",
+  "dog.png",
+  "grapes.png",
+  "lion.png"
+];
 
-window.addEventListener("load", function () {
-  const gameContainer = document.getElementById("game");
-  const moveSpan = document.getElementById("moveCount");
-  const timeSpan = document.getElementById("timeCount");
-  const restartBtn = document.getElementById("restartBtn");
-  const levelSelect = document.getElementById("levelSelect");
+let cards = [];
+let firstCard = null;
+let secondCard = null;
+let lockBoard = false;
+let moves = 0;
+let time = 0;
+let timer = null;
 
-  // LEVELS
-  const LEVELS = {
-    easy: { pairs: 2, columns: 2 },
-    medium: { pairs: 8, columns: 4 },
-    hard: { pairs: 18, columns: 6 },
-  };
+// ----------------- GAME START -----------------
+function startGame() {
+  const levelSelect = document.getElementById("level");
+  const level = levelSelect.value; // easy / medium / hard
+  const cardContainer = document.querySelector(".card-container");
 
-  // USE IMAGE FILES (from /images folder)
-  const IMAGES = [
-    "apple.png",
-    "banana.png",
-    "cat.png",
-    "dog.png",
-    "lion.png",
-    "grapes.png",
-  ];
-
-  let currentLevel = "medium";
-  let firstCard = null;
-  let secondCard = null;
-  let lockBoard = false;
-  let moves = 0;
-  let matchedPairs = 0;
-  let timerId = null;
-  let seconds = 0;
-  let timerStarted = false;
-
-  function startTimer() {
-    if (timerStarted) return;
-    timerStarted = true;
-    timerId = setInterval(() => {
-      seconds++;
-      timeSpan.textContent = String(seconds);
-    }, 1000);
+  // grid columns level onujayi
+  if (level === "easy") {
+    cardContainer.style.gridTemplateColumns = "repeat(2, 80px)";
+  } else {
+    cardContainer.style.gridTemplateColumns = "repeat(4, 80px)";
   }
 
-  function resetTimer() {
-    clearInterval(timerId);
-    timerId = null;
-    timerStarted = false;
-    seconds = 0;
-    timeSpan.textContent = "0";
-  }
+  // reset UI
+  cardContainer.innerHTML = "";
+  clearInterval(timer);
+  moves = 0;
+  time = 0;
+  document.getElementById("moves").innerText = `Moves: ${moves}`;
+  document.getElementById("time").innerText = `Time: ${time}s`;
 
-  function resetGame() {
-    lockBoard = false;
-    firstCard = null;
-    secondCard = null;
-    moves = 0;
-    matchedPairs = 0;
-    moveSpan.textContent = moves;
-    resetTimer();
-    renderGameBoard();
-  }
+  // timer start
+  timer = setInterval(() => {
+    time++;
+    document.getElementById("time").innerText = `Time: ${time}s`;
+  }, 1000);
 
-  function renderGameBoard() {
-    gameContainer.innerHTML = "";
-    const { pairs, columns } = LEVELS[currentLevel];
-    gameContainer.style.gridTemplateColumns = `repeat(${columns}, 75px)`;
+  // level onujayi koy pair
+  let pairs = 2; // default easy
+  if (level === "medium") pairs = 4;
+  if (level === "hard") pairs = 6;
 
-    let cards = [];
-    for (let i = 0; i < pairs; i++) {
-      const img = IMAGES[i % IMAGES.length];
-      cards.push(img, img);
-    }
-    cards.sort(() => Math.random() - 0.5);
+  const selectedImages = imageList.slice(0, pairs);
 
-    cards.forEach((image) => {
-      const card = document.createElement("div");
-      card.className = "card";
-      card.dataset.image = image;
+  // pair bananor jonno duibar kore add
+  cards = [...selectedImages, ...selectedImages];
 
-      const front = document.createElement("div");
-      front.className = "front";
+  // shuffle
+  cards.sort(() => Math.random() - 0.5);
 
-      const back = document.createElement("div");
-      back.className = "back";
-      back.style.backgroundImage = `url('images/${image}')`;
+  // card create
+  cards.forEach((imgName) => {
+    const card = document.createElement("div");
+    card.classList.add("card");
+    card.dataset.image = imgName;
 
-      card.appendChild(front);
-      card.appendChild(back);
+    card.innerHTML = `
+      <div class="card-inner">
+        <div class="card-front"></div>
+        <div class="card-back">
+          <img src="images/${imgName}" alt="${imgName}">
+        </div>
+      </div>
+    `;
 
-      card.addEventListener("click", handleCardClick);
-      gameContainer.appendChild(card);
-    });
-  }
-
-  function handleCardClick() {
-    if (lockBoard) return;
-    if (this === firstCard) return;
-
-    this.classList.add("flipped");
-    startTimer();
-
-    if (!firstCard) {
-      firstCard = this;
-      return;
-    }
-
-    secondCard = this;
-    moves++;
-    moveSpan.textContent = moves;
-    checkForMatch();
-  }
-
-  function checkForMatch() {
-    let isMatch = firstCard.dataset.image === secondCard.dataset.image;
-    isMatch ? disableCards() : unflipCards();
-  }
-
-  function disableCards() {
-    matchedPairs++;
-    firstCard.removeEventListener("click", handleCardClick);
-    secondCard.removeEventListener("click", handleCardClick);
-    resetSelection();
-
-    const { pairs } = LEVELS[currentLevel];
-    if (matchedPairs === pairs) {
-      setTimeout(() => {
-        alert(`🎉 Srija Pal WON! Time: ${seconds}s | Moves: ${moves}`);
-      }, 500);
-    }
-  }
-
-  function unflipCards() {
-    lockBoard = true;
-    setTimeout(() => {
-      firstCard.classList.remove("flipped");
-      secondCard.classList.remove("flipped");
-      resetSelection();
-    }, 1000);
-  }
-
-  function resetSelection() {
-    [firstCard, secondCard] = [null, null];
-    lockBoard = false;
-  }
-
-  restartBtn.addEventListener("click", resetGame);
-  levelSelect.addEventListener("change", function () {
-    currentLevel = this.value;
-    resetGame();
+    card.addEventListener("click", handleCardClick);
+    cardContainer.appendChild(card);
   });
+}
 
-  renderGameBoard();
-});
+// ----------------- CARD CLICK -----------------
+function handleCardClick() {
+  if (lockBoard) return;
+  if (this === firstCard) return;
+
+  this.classList.add("flip");
+
+  if (!firstCard) {
+    firstCard = this;
+    return;
+  }
+
+  secondCard = this;
+  moves++;
+  document.getElementById("moves").innerText = `Moves: ${moves}`;
+
+  checkForMatch();
+}
+
+// ----------------- MATCH CHECK -----------------
+function checkForMatch() {
+  const isMatch = firstCard.dataset.image === secondCard.dataset.image;
+
+  if (isMatch) {
+    disableCards();
+  } else {
+    unflipCards();
+  }
+}
+
+function disableCards() {
+  firstCard.removeEventListener("click", handleCardClick);
+  secondCard.removeEventListener("click", handleCardClick);
+
+  resetBoard();
+
+  // sob card flip hole win
+  const allCards = document.querySelectorAll(".card");
+  const allFlipped = Array.from(allCards).every(card =>
+    card.classList.contains("flip")
+  );
+
+  if (allFlipped) {
+    clearInterval(timer);
+    setTimeout(() => {
+      alert(`🎉 You Won!\nTime: ${time}s\nMoves: ${moves}`);
+    }, 300);
+  }
+}
+
+function unflipCards() {
+  lockBoard = true;
+
+  setTimeout(() => {
+    firstCard.classList.remove("flip");
+    secondCard.classList.remove("flip");
+    resetBoard();
+  }, 800);
+}
+
+function resetBoard() {
+  [firstCard, secondCard, lockBoard] = [null, null, false];
+}
+
+// ----------------- LISTENERS -----------------
+document.getElementById("restart").addEventListener("click", startGame);
+document.getElementById("level").addEventListener("change", startGame);
+window.addEventListener("load", startGame);
