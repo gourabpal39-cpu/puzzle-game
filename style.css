@@ -23,6 +23,7 @@ body {
   text-align: center;
   width: 100%;
   max-width: 420px;
+  transition: transform 0.3s ease;
 }
 
 h1 {
@@ -90,7 +91,7 @@ select {
 }
 
 .card-front {
-  background: #ffc400;
+  background: #ffc400; /* yellow box */
 }
 
 .card-back {
@@ -123,6 +124,19 @@ select {
 .footer {
   font-size: 11px;
   opacity: 0.7;
+}
+
+/* Win animation */
+@keyframes winEffect {
+  0%   { transform: scale(1); }
+  25%  { transform: scale(1.03); }
+  50%  { transform: scale(1.06); }
+  75%  { transform: scale(1.03); }
+  100% { transform: scale(1); }
+}
+
+.game-wrapper.win {
+  animation: winEffect 1s ease-in-out 2;
 }
 
 /* Small screen tweak */
