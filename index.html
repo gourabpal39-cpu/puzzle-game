@@ -3,39 +3,34 @@
 <head>
   <meta charset="UTF-8" />
   <title>Puzzle Memory Game</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <div class="game-wrapper">
+    <h1>🧠 Puzzle Memory Game</h1>
 
-  <h1>🧠 Puzzle Memory Game</h1>
+    <div class="controls">
+      <label for="level">Select Level:</label>
+      <select id="level">
+        <option value="easy">Easy (2x2)</option>
+        <option value="medium">Medium (4x2)</option>
+        <option value="hard">Hard (4x3)</option>
+      </select>
+    </div>
 
-  <!-- LEVEL SELECT -->
-  <label>Select Level:</label>
-  <select id="levelSelect">
-    <option value="easy">Easy (2×2)</option>
-    <option value="medium" selected>Medium (4×4)</option>
-    <option value="hard">Hard (6×6)</option>
-  </select>
+    <div class="stats">
+      <span id="time">Time: 0s</span>
+      <span id="moves">Moves: 0</span>
+    </div>
 
-  <!-- TIMER DISPLAY -->
-  <p id="timeBox">Time: <span id="timeCount">0</span>s</p>
+    <div class="card-container"></div>
 
-  <!-- MOVES DISPLAY -->
-  <p id="stats">Moves: <span id="moveCount">0</span></p>
+    <button id="restart" class="btn">Restart Game</button>
 
-  <!-- GAME GRID -->
-  <div class="game-container" id="game"></div>
-
-  <!-- RESTART BUTTON -->
-  <button id="restartBtn">🔁 Restart Game</button>
-
-  <!-- FOOTER -->
-  <footer>
-    <p>© GP VFX Studio</p>
-  </footer>
+    <p class="footer">© GP VFX Studio</p>
+  </div>
 
   <script src="script.js"></script>
-
 </body>
 </html>
