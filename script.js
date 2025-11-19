@@ -1,196 +1,183 @@
-// basic references
-const gameContainer = document.getElementById("game");
-const moveSpan = document.getElementById("moveCount");
-const timeSpan = document.getElementById("timeCount");
-const restartBtn = document.getElementById("restartBtn");
-const levelSelect = document.getElementById("levelSelect");
-const splash = document.getElementById("splash");
-const app = document.getElementById("app");
-const startGameBtn = document.getElementById("startGameBtn");
+// SIMPLE & SAFE VERSION
 
-// level config: koyta pair & koyta column
-const LEVELS = {
-  easy: { pairs: 2, columns: 2 },
-  medium: { pairs: 8, columns: 4 },
-  hard: { pairs: 18, columns: 6 },
-};
+window.addEventListener("load", function () {
+  const gameContainer = document.getElementById("game");
+  const moveSpan = document.getElementById("moveCount");
+  const timeSpan = document.getElementById("timeCount");
+  const restartBtn = document.getElementById("restartBtn");
+  const levelSelect = document.getElementById("levelSelect");
+  const splash = document.getElementById("splash");
+  const app = document.getElementById("app");
+  const startGameBtn = document.getElementById("startGameBtn");
 
-// colourful emoji (cartoon feel)
-const EMOJIS = [
-  "🍎",
-  "🍌",
-  "🍇",
-  "🍒",
-  "🍉",
-  "🍍",
-  "🥝",
-  "🍓",
-  "🥕",
-  "🍆",
-  "🌽",
-  "🥦",
-  "🧀",
-  "🍔",
-  "🍕",
-  "🍩",
-  "🍪",
-  "🍭",
-];
+  // level config: koyta pair & koyta column
+  const LEVELS = {
+    easy: { pairs: 2, columns: 2 },
+    medium: { pairs: 8, columns: 4 },
+    hard: { pairs: 18, columns: 6 }
+  };
 
-let currentLevel = "medium";
-let firstCard = null;
-let secondCard = null;
-let lockBoard = false;
-let matchedPairs = 0;
-let moves = 0;
-let seconds = 0;
-let timerId = null;
-let timerStarted = false;
+  // colourful emoji
+  const EMOJIS = [
+    "🍎","🍌","🍇","🍒","🍉","🍍","🥝","🍓",
+    "🥕","🍆","🌽","🥦","🧀","🍔","🍕","🍩",
+    "🍪","🍭"
+  ];
 
-// (sound porer jonno rakhchi – file na thakleo kono problem nei)
-let flipSound, matchSound, winSound;
-try {
-  flipSound = new Audio("flip.mp3");
-  matchSound = new Audio("match.mp3");
-  winSound = new Audio("win.mp3");
-} catch (e) {}
+  let currentLevel = "medium";
+  let firstCard = null;
+  let secondCard = null;
+  let lockBoard = false;
+  let matchedPairs = 0;
+  let moves = 0;
+  let seconds = 0;
+  let timerId = null;
+  let timerStarted = false;
 
-function playSound(sound) {
-  if (!sound) return;
-  try {
-    sound.currentTime = 0;
-    sound.play();
-  } catch (e) {}
-}
-
-function startTimer() {
-  if (timerStarted) return;
-  timerStarted = true;
-  timerId = setInterval(() => {
-    seconds++;
-    timeSpan.textContent = seconds;
-  }, 1000);
-}
-
-function resetTimer() {
-  clearInterval(timerId);
-  timerId = null;
-  timerStarted = false;
-  seconds = 0;
-  timeSpan.textContent = "0";
-}
-
-function shuffleArray(arr) {
-  return arr.slice().sort(() => Math.random() - 0.5);
-}
-
-function setupLevel(levelKey) {
-  currentLevel = levelKey;
-  const config = LEVELS[levelKey];
-
-  // reset stats
-  firstCard = null;
-  secondCard = null;
-  lockBoard = false;
-  matchedPairs = 0;
-  moves = 0;
-  moveSpan.textContent = "0";
-  resetTimer();
-
-  // clear old cards
-  gameContainer.innerHTML = "";
-
-  // choose emojis
-  const needed = config.pairs;
-  const symbols = EMOJIS.slice(0, needed);
-  const cardsData = shuffleArray([...symbols, ...symbols]);
-
-  // grid columns
-  gameContainer.style.gridTemplateColumns = `repeat(${config.columns}, minmax(50px, 1fr))`;
-
-  // create cards
-  cardsData.forEach((symbol) => {
-    const card = document.createElement("div");
-    card.classList.add("card");
-    card.setAttribute("data-symbol", symbol);
-    card.addEventListener("click", onCardClick);
-    gameContainer.appendChild(card);
-  });
-}
-
-function updateMoves() {
-  moves++;
-  moveSpan.textContent = moves;
-}
-
-function onCardClick() {
-  if (lockBoard) return;
-  if (this === firstCard) return;
-
-  if (!timerStarted) {
-    startTimer();
+  function startTimer() {
+    if (timerStarted) return;
+    timerStarted = true;
+    timerId = setInterval(function () {
+      seconds += 1;
+      timeSpan.textContent = String(seconds);
+    }, 1000);
   }
 
-  this.textContent = this.getAttribute("data-symbol");
-  this.classList.add("flipped");
-  playSound(flipSound);
-
-  if (!firstCard) {
-    firstCard = this;
-  } else {
-    secondCard = this;
-    checkMatch();
+  function resetTimer() {
+    if (timerId !== null) {
+      clearInterval(timerId);
+    }
+    timerId = null;
+    timerStarted = false;
+    seconds = 0;
+    timeSpan.textContent = "0";
   }
-}
 
-function checkMatch() {
-  updateMoves();
+  function shuffleArray(arr) {
+    var copy = arr.slice();
+    for (var i = copy.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var temp = copy[i];
+      copy[i] = copy[j];
+      copy[j] = temp;
+    }
+    return copy;
+  }
 
-  const symbol1 = firstCard.getAttribute("data-symbol");
-  const symbol2 = secondCard.getAttribute("data-symbol");
+  function setupLevel(levelKey) {
+    currentLevel = levelKey;
+    var config = LEVELS[levelKey];
 
-  if (symbol1 === symbol2) {
-    matchedPairs++;
-    playSound(matchSound);
+    // reset stats
     firstCard = null;
     secondCard = null;
+    lockBoard = false;
+    matchedPairs = 0;
+    moves = 0;
+    moveSpan.textContent = "0";
+    resetTimer();
 
-    if (matchedPairs === LEVELS[currentLevel].pairs) {
-      clearInterval(timerId);
-      playSound(winSound);
-      setTimeout(() => {
-        alert(
-          `Great! Level: ${currentLevel.toUpperCase()}\nMoves: ${moves}\nTime: ${seconds}s 🎉`
-        );
-      }, 200);
+    // clear old cards
+    gameContainer.innerHTML = "";
+
+    // choose emojis
+    var needed = config.pairs;
+    var symbols = EMOJIS.slice(0, needed);
+    var cardsData = shuffleArray(symbols.concat(symbols));
+
+    // grid columns
+    gameContainer.style.gridTemplateColumns =
+      "repeat(" + config.columns + ", minmax(50px, 1fr))";
+
+    // create cards
+    cardsData.forEach(function (symbol) {
+      var card = document.createElement("div");
+      card.classList.add("card");
+      card.setAttribute("data-symbol", symbol);
+      card.addEventListener("click", onCardClick);
+      gameContainer.appendChild(card);
+    });
+  }
+
+  function updateMoves() {
+    moves += 1;
+    moveSpan.textContent = String(moves);
+  }
+
+  function onCardClick() {
+    if (lockBoard) return;
+    if (this === firstCard) return;
+
+    if (!timerStarted) {
+      startTimer();
     }
-  } else {
-    lockBoard = true;
-    setTimeout(() => {
-      firstCard.textContent = "";
-      secondCard.textContent = "";
-      firstCard.classList.remove("flipped");
-      secondCard.classList.remove("flipped");
+
+    this.textContent = this.getAttribute("data-symbol");
+    this.classList.add("flipped");
+
+    if (!firstCard) {
+      firstCard = this;
+    } else {
+      secondCard = this;
+      checkMatch();
+    }
+  }
+
+  function checkMatch() {
+    updateMoves();
+
+    var symbol1 = firstCard.getAttribute("data-symbol");
+    var symbol2 = secondCard.getAttribute("data-symbol");
+
+    if (symbol1 === symbol2) {
+      matchedPairs += 1;
       firstCard = null;
       secondCard = null;
-      lockBoard = false;
-    }, 700);
+
+      if (matchedPairs === LEVELS[currentLevel].pairs) {
+        if (timerId !== null) {
+          clearInterval(timerId);
+        }
+        setTimeout(function () {
+          alert(
+            "Great! Level: " +
+              currentLevel.toUpperCase() +
+              "\nMoves: " +
+              moves +
+              "\nTime: " +
+              seconds +
+              "s 🎉"
+          );
+        }, 200);
+      }
+    } else {
+      lockBoard = true;
+      setTimeout(function () {
+        firstCard.textContent = "";
+        secondCard.textContent = "";
+        firstCard.classList.remove("flipped");
+        secondCard.classList.remove("flipped");
+        firstCard = null;
+        secondCard = null;
+        lockBoard = false;
+      }, 700);
+    }
   }
-}
 
-// level change dropdown
-levelSelect.addEventListener("change", () => {
-  setupLevel(levelSelect.value);
-});
+  // level change dropdown
+  levelSelect.addEventListener("change", function () {
+    setupLevel(levelSelect.value);
+  });
 
-// restart button
-restartBtn.addEventListener("click", () => {
-  setupLevel(currentLevel);
-});
+  // restart button
+  restartBtn.addEventListener("click", function () {
+    setupLevel(currentLevel);
+  });
 
-// splash theke start
-startGameBtn.addEventListener("click", () => {
-  splash.classList.add("hidden");
-  app.classList.remove("hidden");
-  setupLevel(currentLevel);
+  // splash theke start
+  startGameBtn.addEventListener("click", function () {
+    splash.classList.add("hidden");
+    app.classList.remove("hidden");
+    setupLevel(currentLevel);
+  });
 });
