@@ -1,4 +1,4 @@
-// SIMPLE & SAFE VERSION
+// SIMPLE LEVEL + TIMER VERSION
 
 window.addEventListener("load", function () {
   const gameContainer = document.getElementById("game");
@@ -6,18 +6,13 @@ window.addEventListener("load", function () {
   const timeSpan = document.getElementById("timeCount");
   const restartBtn = document.getElementById("restartBtn");
   const levelSelect = document.getElementById("levelSelect");
-  const splash = document.getElementById("splash");
-  const app = document.getElementById("app");
-  const startGameBtn = document.getElementById("startGameBtn");
 
-  // level config: koyta pair & koyta column
   const LEVELS = {
     easy: { pairs: 2, columns: 2 },
     medium: { pairs: 8, columns: 4 },
-    hard: { pairs: 18, columns: 6 }
+    hard: { pairs: 18, columns: 6 },
   };
 
-  // colourful emoji
   const EMOJIS = [
     "🍎","🍌","🍇","🍒","🍉","🍍","🥝","🍓",
     "🥕","🍆","🌽","🥦","🧀","🍔","🍕","🍩",
@@ -54,19 +49,17 @@ window.addEventListener("load", function () {
   }
 
   function shuffleArray(arr) {
-    var copy = arr.slice();
-    for (var i = copy.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1));
-      var temp = copy[i];
-      copy[i] = copy[j];
-      copy[j] = temp;
+    const copy = arr.slice();
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
     }
     return copy;
   }
 
   function setupLevel(levelKey) {
     currentLevel = levelKey;
-    var config = LEVELS[levelKey];
+    const config = LEVELS[levelKey];
 
     // reset stats
     firstCard = null;
@@ -81,9 +74,9 @@ window.addEventListener("load", function () {
     gameContainer.innerHTML = "";
 
     // choose emojis
-    var needed = config.pairs;
-    var symbols = EMOJIS.slice(0, needed);
-    var cardsData = shuffleArray(symbols.concat(symbols));
+    const needed = config.pairs;
+    const symbols = EMOJIS.slice(0, needed);
+    const cardsData = shuffleArray(symbols.concat(symbols));
 
     // grid columns
     gameContainer.style.gridTemplateColumns =
@@ -91,7 +84,7 @@ window.addEventListener("load", function () {
 
     // create cards
     cardsData.forEach(function (symbol) {
-      var card = document.createElement("div");
+      const card = document.createElement("div");
       card.classList.add("card");
       card.setAttribute("data-symbol", symbol);
       card.addEventListener("click", onCardClick);
@@ -126,8 +119,8 @@ window.addEventListener("load", function () {
   function checkMatch() {
     updateMoves();
 
-    var symbol1 = firstCard.getAttribute("data-symbol");
-    var symbol2 = secondCard.getAttribute("data-symbol");
+    const symbol1 = firstCard.getAttribute("data-symbol");
+    const symbol2 = secondCard.getAttribute("data-symbol");
 
     if (symbol1 === symbol2) {
       matchedPairs += 1;
@@ -135,9 +128,7 @@ window.addEventListener("load", function () {
       secondCard = null;
 
       if (matchedPairs === LEVELS[currentLevel].pairs) {
-        if (timerId !== null) {
-          clearInterval(timerId);
-        }
+        if (timerId !== null) clearInterval(timerId);
         setTimeout(function () {
           alert(
             "Great! Level: " +
@@ -174,10 +165,6 @@ window.addEventListener("load", function () {
     setupLevel(currentLevel);
   });
 
-  // splash theke start
-  startGameBtn.addEventListener("click", function () {
-    splash.classList.add("hidden");
-    app.classList.remove("hidden");
-    setupLevel(currentLevel);
-  });
+  // page load holei medium level theke start
+  setupLevel(currentLevel);
 });
