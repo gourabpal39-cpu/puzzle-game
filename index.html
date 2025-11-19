@@ -2,25 +2,58 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Puzzle Memory Game</title>
+  <title>GP VFX Puzzle Game</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- App icon (chaile icon.png upload kore nite parba) -->
+  <link rel="icon" href="icon.png" />
+
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>🧠 Puzzle Memory Game</h1>
+  <!-- Splash Screen -->
+  <div id="splash">
+    <div class="splash-content">
+      <div class="logo-circle">GP</div>
+      <h1>GP VFX Puzzle</h1>
+      <p>Kids-friendly memory puzzle game</p>
+      <button id="startGameBtn">▶ Tap to Start</button>
+    </div>
+  </div>
 
-  <!-- Moves counter -->
-  <p id="stats">Moves: <span id="moveCount">0</span></p>
+  <!-- Main App -->
+  <div class="app hidden" id="app">
+    <header>
+      <h2>🧠 Puzzle Memory Game</h2>
+      <div class="top-bar">
+        <div class="stat">
+          Level:
+          <select id="levelSelect">
+            <option value="easy">Easy 2×2</option>
+            <option value="medium" selected>Medium 4×4</option>
+            <option value="hard">Hard 6×6</option>
+          </select>
+        </div>
+        <div class="stat">
+          Moves: <span id="moveCount">0</span>
+        </div>
+        <div class="stat">
+          Time: <span id="timeCount">0</span>s
+        </div>
+      </div>
+    </header>
 
-  <div class="game-container" id="game"></div>
+    <main>
+      <div class="game-container" id="game"></div>
+    </main>
 
-  <button id="restartBtn">🔁 Restart Game</button>
+    <button id="restartBtn">🔁 Restart Game</button>
 
-  <footer>
-    <p>© GP VFX Studio</p>
-  </footer>
+    <footer>
+      <p>© GP VFX Studio</p>
+    </footer>
+  </div>
 
-  <!-- script body er shesh e rakha, jate sob element ready thake -->
   <script src="script.js"></script>
 </body>
 </html>
