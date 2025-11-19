@@ -1,139 +1,164 @@
-// 🌟 LEVEL SYSTEM + TIMER + MEMORY GAME
+// IMAGE + SOUND VERSION
 
-const LEVELS = {
-  easy: 2,
-  medium: 4,
-  hard: 6
-};
-let currentLevel = "medium";
+window.addEventListener("load", function () {
+  const gameContainer = document.getElementById("game");
+  const moveSpan = document.getElementById("moveCount");
+  const timeSpan = document.getElementById("timeCount");
+  const restartBtn = document.getElementById("restartBtn");
+  const levelSelect = document.getElementById("levelSelect");
 
-const emojis = [
-  "🍎","🍌","🍇","🍒","🍉","🍍","🥝","🍓",
-  "🥕","🍆","🌽","🥦","🧀","🍔","🍕","🍩",
-  "🍪","🍭"
-];
+  const LEVELS = {
+    easy: { pairs: 2, columns: 2 },
+    medium: { pairs: 8, columns: 4 },
+    hard: { pairs: 18, columns: 6 },
+  };
 
-const gameContainer = document.getElementById("game");
-const moveSpan = document.getElementById("moveCount");
-const timeSpan = document.getElementById("timeCount");
-const levelSelect = document.getElementById("levelSelect");
+  const IMAGES = [
+    "apple.png",
+    "banana.png",
+    "cat.png",
+    "dog.png",
+    "lion.png",
+    "grapes.png",
+  ];
 
-let firstCard = null;
-let secondCard = null;
-let lockBoard = false;
-let matchedPairs = 0;
-let moves = 0;
-let timerStarted = false;
-let seconds = 0;
-let timerId = null;
+  let currentLevel = "medium";
+  let firstCard = null;
+  let secondCard = null;
+  let lockBoard = false;
+  let moves = 0;
+  let matchedPairs = 0;
+  let timerId = null;
+  let seconds = 0;
+  let timerStarted = false;
 
-// 🔁 Restart Game
-document.getElementById("restartBtn").addEventListener("click", () => {
-  setupGame();
-});
-
-// 🔀 Setup Cards & Level
-function setupGame() {
-  gameContainer.innerHTML = "";
-  moves = 0;
-  moveSpan.textContent = "0";
-  matchedPairs = 0;
-  firstCard = null;
-  secondCard = null;
-  lockBoard = false;
-  resetTimer();
-
-  gameContainer.style.gridTemplateColumns =
-    `repeat(${LEVELS[currentLevel]}, 70px)`;
-
-  let totalCards = LEVELS[currentLevel] * LEVELS[currentLevel];
-  let neededPairs = totalCards / 2;
-  let gameEmojis = emojis.slice(0, neededPairs);
-  let cardData = gameEmojis.concat(gameEmojis).sort(() => Math.random() - 0.5);
-
-  cardData.forEach(emoji => {
-    const card = document.createElement("div");
-    card.classList.add("card");
-    card.setAttribute("data-emoji", emoji);
-    card.addEventListener("click", flipCard);
-    gameContainer.appendChild(card);
-  });
-}
-
-// 🃏 Flip Card
-function flipCard() {
-  if (lockBoard) return;
-  if (this === firstCard) return;
-
-  if (!timerStarted) startTimer();
-
-  this.textContent = this.getAttribute("data-emoji");
-  this.classList.add("flipped");
-
-  if (!firstCard) {
-    firstCard = this;
-  } else {
-    secondCard = this;
-    checkMatch();
+  function playSound(filename) {
+    const audio = new Audio(filename);
+    audio.play();
   }
-}
 
-// 💠 Check Match
-function checkMatch() {
-  updateMoves();
+  function startTimer() {
+    if (timerStarted) return;
+    timerStarted = true;
+    timerId = setInterval(() => {
+      seconds++;
+      timeSpan.textContent = String(seconds);
+    }, 1000);
+  }
 
-  if (firstCard.getAttribute("data-emoji") === secondCard.getAttribute("data-emoji")) {
-    matchedPairs++;
+  function resetTimer() {
+    clearInterval(timerId);
+    timerId = null;
+    seconds = 0;
+    timerStarted = false;
+    timeSpan.textContent = "0";
+  }
+
+  function resetGame() {
+    lockBoard = false;
     firstCard = null;
     secondCard = null;
-
-    if (matchedPairs === (LEVELS[currentLevel] * LEVELS[currentLevel]) / 2) {
-      clearInterval(timerId);
-      setTimeout(() => {
-        alert(`🎉 Level: ${currentLevel.toUpperCase()}\nMoves: ${moves}\nTime: ${seconds} sec`);
-      }, 300);
-    }
-  } else {
-    lockBoard = true;
-    setTimeout(() => {
-      firstCard.textContent = "";
-      secondCard.textContent = "";
-      firstCard.classList.remove("flipped");
-      secondCard.classList.remove("flipped");
-      firstCard = null;
-      secondCard = null;
-      lockBoard = false;
-    }, 700);
+    matchedPairs = 0;
+    moves = 0;
+    moveSpan.textContent = moves;
+    resetTimer();
+    renderGameBoard();
   }
-}
 
-// 🧠 Moves Count
-function updateMoves() {
-  moves++;
-  moveSpan.textContent = moves;
-}
+  function renderGameBoard() {
+    gameContainer.innerHTML = "";
+    const { pairs, columns } = LEVELS[currentLevel];
+    gameContainer.style.gridTemplateColumns = `repeat(${columns}, 75px)`;
 
-// 🕒 Timer System
-function startTimer() {
-  timerStarted = true;
-  timerId = setInterval(() => {
-    seconds++;
-    timeSpan.textContent = seconds;
-  }, 1000);
-}
+    const selectedImages = IMAGES.slice(0, pairs);
+    const cardImages = [...selectedImages, ...selectedImages];
+    shuffle(cardImages);
 
-function resetTimer() {
-  clearInterval(timerId);
-  timerStarted = false;
-  seconds = 0;
-  timeSpan.textContent = "0";
-}
+    cardImages.forEach((image) => {
+      const card = document.createElement("div");
+      card.classList.add("card");
+      card.dataset.image = image;
 
-// 🔃 Level Change
-levelSelect.addEventListener("change", () => {
-  currentLevel = levelSelect.value;
-  setupGame();
+      const front = document.createElement("img");
+      front.classList.add("front-face");
+      front.src = "images/" + image;
+
+      const back = document.createElement("div");
+      back.classList.add("back-face");
+      back.textContent = "❓";
+
+      card.appendChild(front);
+      card.appendChild(back);
+      gameContainer.appendChild(card);
+
+      card.addEventListener("click", () => flipCard(card));
+    });
+  }
+
+  function flipCard(card) {
+    if (lockBoard || card === firstCard) return;
+    startTimer();
+    card.classList.add("flip");
+    playSound("flip.mp3");
+
+    if (!firstCard) {
+      firstCard = card;
+      return;
+    }
+
+    secondCard = card;
+    moves++;
+    moveSpan.textContent = moves;
+
+    checkMatch();
+  }
+
+  function checkMatch() {
+    lockBoard = true;
+    const isMatch = firstCard.dataset.image === secondCard.dataset.image;
+
+    if (isMatch) {
+      matchedPairs++;
+      playSound("match.mp3");
+      resetCards();
+      if (isGameOver()) handleWin();
+    } else {
+      setTimeout(() => {
+        firstCard.classList.remove("flip");
+        secondCard.classList.remove("flip");
+        resetCards();
+      }, 1000);
+    }
+  }
+
+  function resetCards() {
+    firstCard = null;
+    secondCard = null;
+    lockBoard = false;
+  }
+
+  function isGameOver() {
+    return matchedPairs === LEVELS[currentLevel].pairs;
+  }
+
+  function handleWin() {
+    clearInterval(timerId);
+    playSound("win.mp3");
+    alert(`🎉 SRIJA PAL WON! Time: ${seconds}s | Moves: ${moves}`);
+  }
+
+  function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+  }
+
+  restartBtn.addEventListener("click", resetGame);
+  levelSelect.addEventListener("change", (e) => {
+    currentLevel = e.target.value;
+    resetGame();
+  });
+
+  renderGameBoard();
 });
-
-// 🚀 Start First
-setupGame();
