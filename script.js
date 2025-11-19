@@ -1,170 +1,75 @@
-// SIMPLE LEVEL + TIMER VERSION
+const emojis = ["🍎", "🍌", "🍇", "🍒", "🍎", "🍌", "🍇", "🍒"]; // pairs
+const gameContainer = document.getElementById("game");
+let shuffleEmojis = emojis.sort(() => Math.random() - 0.5);
 
-window.addEventListener("load", function () {
-  const gameContainer = document.getElementById("game");
-  const moveSpan = document.getElementById("moveCount");
-  const timeSpan = document.getElementById("timeCount");
-  const restartBtn = document.getElementById("restartBtn");
-  const levelSelect = document.getElementById("levelSelect");
+let firstCard = null;
+let secondCard = null;
+let lockBoard = false;
+let matchedPairs = 0;
+let moves = 0;
 
-  const LEVELS = {
-    easy: { pairs: 2, columns: 2 },
-    medium: { pairs: 8, columns: 4 },
-    hard: { pairs: 18, columns: 6 },
-  };
+const moveSpan = document.getElementById("moveCount");
 
-  const EMOJIS = [
-    "🍎","🍌","🍇","🍒","🍉","🍍","🥝","🍓",
-    "🥕","🍆","🌽","🥦","🧀","🍔","🍕","🍩",
-    "🍪","🍭"
-  ];
+// Create cards
+shuffleEmojis.forEach((emoji) => {
+  const card = document.createElement("div");
+  card.classList.add("card");
+  card.setAttribute("data-emoji", emoji);
+  card.addEventListener("click", flipCard);
+  gameContainer.appendChild(card);
+});
 
-  let currentLevel = "medium";
-  let firstCard = null;
-  let secondCard = null;
-  let lockBoard = false;
-  let matchedPairs = 0;
-  let moves = 0;
-  let seconds = 0;
-  let timerId = null;
-  let timerStarted = false;
+function flipCard() {
+  if (lockBoard) return;
+  if (this === firstCard) return;
 
-  function startTimer() {
-    if (timerStarted) return;
-    timerStarted = true;
-    timerId = setInterval(function () {
-      seconds += 1;
-      timeSpan.textContent = String(seconds);
-    }, 1000);
+  this.textContent = this.getAttribute("data-emoji");
+  this.classList.add("flipped");
+
+  if (!firstCard) {
+    firstCard = this;
+  } else {
+    secondCard = this;
+    checkMatch();
   }
+}
 
-  function resetTimer() {
-    if (timerId !== null) {
-      clearInterval(timerId);
-    }
-    timerId = null;
-    timerStarted = false;
-    seconds = 0;
-    timeSpan.textContent = "0";
-  }
+function updateMoves() {
+  moves++;
+  moveSpan.textContent = moves;
+}
 
-  function shuffleArray(arr) {
-    const copy = arr.slice();
-    for (let i = copy.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [copy[i], copy[j]] = [copy[j], copy[i]];
-    }
-    return copy;
-  }
+function checkMatch() {
+  updateMoves();
 
-  function setupLevel(levelKey) {
-    currentLevel = levelKey;
-    const config = LEVELS[levelKey];
-
-    // reset stats
+  if (
+    firstCard.getAttribute("data-emoji") ===
+    secondCard.getAttribute("data-emoji")
+  ) {
+    matchedPairs++;
     firstCard = null;
     secondCard = null;
-    lockBoard = false;
-    matchedPairs = 0;
-    moves = 0;
-    moveSpan.textContent = "0";
-    resetTimer();
 
-    // clear old cards
-    gameContainer.innerHTML = "";
-
-    // choose emojis
-    const needed = config.pairs;
-    const symbols = EMOJIS.slice(0, needed);
-    const cardsData = shuffleArray(symbols.concat(symbols));
-
-    // grid columns
-    gameContainer.style.gridTemplateColumns =
-      "repeat(" + config.columns + ", minmax(50px, 1fr))";
-
-    // create cards
-    cardsData.forEach(function (symbol) {
-      const card = document.createElement("div");
-      card.classList.add("card");
-      card.setAttribute("data-symbol", symbol);
-      card.addEventListener("click", onCardClick);
-      gameContainer.appendChild(card);
-    });
-  }
-
-  function updateMoves() {
-    moves += 1;
-    moveSpan.textContent = String(moves);
-  }
-
-  function onCardClick() {
-    if (lockBoard) return;
-    if (this === firstCard) return;
-
-    if (!timerStarted) {
-      startTimer();
+    if (matchedPairs === emojis.length / 2) {
+      setTimeout(() => {
+        alert(`Great! You finished in ${moves} moves 🎉`);
+      }, 200);
     }
-
-    this.textContent = this.getAttribute("data-symbol");
-    this.classList.add("flipped");
-
-    if (!firstCard) {
-      firstCard = this;
-    } else {
-      secondCard = this;
-      checkMatch();
-    }
-  }
-
-  function checkMatch() {
-    updateMoves();
-
-    const symbol1 = firstCard.getAttribute("data-symbol");
-    const symbol2 = secondCard.getAttribute("data-symbol");
-
-    if (symbol1 === symbol2) {
-      matchedPairs += 1;
+  } else {
+    lockBoard = true;
+    setTimeout(() => {
+      firstCard.textContent = "";
+      secondCard.textContent = "";
+      firstCard.classList.remove("flipped");
+      secondCard.textContent = "";
+      secondCard.classList.remove("flipped");
       firstCard = null;
       secondCard = null;
-
-      if (matchedPairs === LEVELS[currentLevel].pairs) {
-        if (timerId !== null) clearInterval(timerId);
-        setTimeout(function () {
-          alert(
-            "Great! Level: " +
-              currentLevel.toUpperCase() +
-              "\nMoves: " +
-              moves +
-              "\nTime: " +
-              seconds +
-              "s 🎉"
-          );
-        }, 200);
-      }
-    } else {
-      lockBoard = true;
-      setTimeout(function () {
-        firstCard.textContent = "";
-        secondCard.textContent = "";
-        firstCard.classList.remove("flipped");
-        secondCard.classList.remove("flipped");
-        firstCard = null;
-        secondCard = null;
-        lockBoard = false;
-      }, 700);
-    }
+      lockBoard = false;
+    }, 700);
   }
+}
 
-  // level change dropdown
-  levelSelect.addEventListener("change", function () {
-    setupLevel(levelSelect.value);
-  });
-
-  // restart button
-  restartBtn.addEventListener("click", function () {
-    setupLevel(currentLevel);
-  });
-
-  // page load holei medium level theke start
-  setupLevel(currentLevel);
+document.getElementById("restartBtn").addEventListener("click", () => {
+  location.reload();
 });
