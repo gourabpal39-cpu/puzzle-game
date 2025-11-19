@@ -1,4 +1,4 @@
-// ---------- IMAGE LIST (images folder er file name gulo) ----------
+// -------- IMAGE LIST (images folder er file name) --------
 const imageList = [
   "apple.png",
   "banana.png",
@@ -16,20 +16,37 @@ let moves = 0;
 let time = 0;
 let timer = null;
 
+// -------- SOUND EFFECTS (sounds folder) --------
+const flipSound = new Audio("sounds/flip.mp3");
+const winSound = new Audio("sounds/win.mp3");
+flipSound.volume = 0.6;
+winSound.volume = 0.7;
+
 // ----------------- GAME START -----------------
 function startGame() {
   const levelSelect = document.getElementById("level");
   const level = levelSelect.value; // easy / medium / hard
   const cardContainer = document.querySelector(".card-container");
+  const wrapper = document.querySelector(".game-wrapper");
 
-  // grid columns level onujayi
+  wrapper.classList.remove("win");
+
+  // Level onujayi grid size & pair number
+  let pairs, cols;
   if (level === "easy") {
-    cardContainer.style.gridTemplateColumns = "repeat(2, 80px)";
+    pairs = 2;    // 4 card (2x2)
+    cols = 2;
+  } else if (level === "medium") {
+    pairs = 4;    // 8 card (4x2)
+    cols = 4;
   } else {
-    cardContainer.style.gridTemplateColumns = "repeat(4, 80px)";
+    pairs = 6;    // 12 card (4x3)
+    cols = 4;
   }
 
-  // reset UI
+  cardContainer.style.gridTemplateColumns = `repeat(${cols}, 80px)`;
+
+  // Reset stats & timer
   cardContainer.innerHTML = "";
   clearInterval(timer);
   moves = 0;
@@ -37,26 +54,19 @@ function startGame() {
   document.getElementById("moves").innerText = `Moves: ${moves}`;
   document.getElementById("time").innerText = `Time: ${time}s`;
 
-  // timer start
   timer = setInterval(() => {
     time++;
     document.getElementById("time").innerText = `Time: ${time}s`;
   }, 1000);
 
-  // level onujayi koy pair
-  let pairs = 2; // default easy
-  if (level === "medium") pairs = 4;
-  if (level === "hard") pairs = 6;
-
+  // Prepare card list
   const selectedImages = imageList.slice(0, pairs);
+  cards = [...selectedImages, ...selectedImages]; // pair banalo
 
-  // pair bananor jonno duibar kore add
-  cards = [...selectedImages, ...selectedImages];
-
-  // shuffle
+  // Shuffle
   cards.sort(() => Math.random() - 0.5);
 
-  // card create
+  // Create card elements
   cards.forEach((imgName) => {
     const card = document.createElement("div");
     card.classList.add("card");
@@ -74,6 +84,9 @@ function startGame() {
     card.addEventListener("click", handleCardClick);
     cardContainer.appendChild(card);
   });
+
+  // Reset board state
+  [firstCard, secondCard, lockBoard] = [null, null, false];
 }
 
 // ----------------- CARD CLICK -----------------
@@ -82,6 +95,12 @@ function handleCardClick() {
   if (this === firstCard) return;
 
   this.classList.add("flip");
+  try {
+    flipSound.currentTime = 0;
+    flipSound.play();
+  } catch (e) {
+    // mobile auto-play restriction ignore
+  }
 
   if (!firstCard) {
     firstCard = this;
@@ -112,7 +131,7 @@ function disableCards() {
 
   resetBoard();
 
-  // sob card flip hole win
+  // All cards matched?
   const allCards = document.querySelectorAll(".card");
   const allFlipped = Array.from(allCards).every(card =>
     card.classList.contains("flip")
@@ -120,9 +139,17 @@ function disableCards() {
 
   if (allFlipped) {
     clearInterval(timer);
+    const wrapper = document.querySelector(".game-wrapper");
+    wrapper.classList.add("win");
+
+    try {
+      winSound.currentTime = 0;
+      winSound.play();
+    } catch (e) {}
+
     setTimeout(() => {
       alert(`🎉 You Won!\nTime: ${time}s\nMoves: ${moves}`);
-    }, 300);
+    }, 500);
   }
 }
 
