@@ -7,25 +7,35 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>🧠 Puzzle Memory Game</h1>
-  <!-- LEVEL SELECT -->
-<label>Select Level:</label>
-<select id="levelSelect">
-  <option value="easy">Easy (2×2)</option>
-  <option value="medium" selected>Medium (4×4)</option>
-  <option value="hard">Hard (6×6)</option>
-</select>
 
+  <h1>🧠 Puzzle Memory Game</h1>
+
+  <!-- LEVEL SELECT -->
+  <label>Select Level:</label>
+  <select id="levelSelect">
+    <option value="easy">Easy (2×2)</option>
+    <option value="medium" selected>Medium (4×4)</option>
+    <option value="hard">Hard (6×6)</option>
+  </select>
+
+  <!-- TIMER DISPLAY -->
+  <p id="timeBox">Time: <span id="timeCount">0</span>s</p>
+
+  <!-- MOVES DISPLAY -->
   <p id="stats">Moves: <span id="moveCount">0</span></p>
 
+  <!-- GAME GRID -->
   <div class="game-container" id="game"></div>
 
+  <!-- RESTART BUTTON -->
   <button id="restartBtn">🔁 Restart Game</button>
 
+  <!-- FOOTER -->
   <footer>
     <p>© GP VFX Studio</p>
   </footer>
 
   <script src="script.js"></script>
+
 </body>
 </html>
